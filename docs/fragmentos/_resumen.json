@@ -1,0 +1,32 @@
+{
+  "endpoints": {
+    "operaciones": 31,
+    "por_rol": {
+      "—": 4,
+      "Cualquier usuario": 2,
+      "Administrador": 6,
+      "Vendedor o administrador": 15,
+      "Sistema consumidor": 4
+    }
+  },
+  "licencias": {
+    "paquetes": 29,
+    "directos": 9,
+    "licencias": 7
+  },
+  "inventario": {
+    "archivos": 55,
+    "lineas": 5339
+  },
+  "pruebas": {
+    "pruebas": 63,
+    "por_archivo": {
+      "tests/test_api.py": 27,
+      "tests/test_catalogo_rest.py": 14,
+      "tests/test_concurrencia.py": 3,
+      "tests/test_config.py": 2,
+      "tests/test_endurecimiento.py": 15,
+      "tests/test_timeutil.py": 2
+    }
+  }
+}

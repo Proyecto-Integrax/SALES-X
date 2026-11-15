@@ -1,0 +1,4 @@
+```
+$ python -m pip_audit -r requirements.txt
+No known vulnerabilities found
+```

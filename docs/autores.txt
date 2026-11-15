@@ -1,0 +1,3 @@
+# Nombres de los autores, uno por línea. Aparecen en la portada de todos los documentos.
+# Después de editar este archivo, regenere:  python scripts/generar_pdf.py  y  python scripts/generar_word.py
+Julio Cesar Velasquez Arango
