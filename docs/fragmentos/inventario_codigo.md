@@ -2,12 +2,12 @@
 |---|---:|---:|
 | app/ (API: rutas, servicios, modelos, integración) | 23 | 1.720 |
 | app/static/ (interfaz web) | 3 | 550 |
-| sql/ (esquema, semillas, rol, migración) | 4 | 192 |
+| sql/ (esquema, semillas, rol, migración) | 5 | 808 |
 | tests/ (pruebas automatizadas) | 7 | 855 |
 | mocks/ (servicios simulados de INTEGRAX) | 2 | 142 |
-| scripts/ (carga, documentación, utilidades) | 11 | 1.680 |
+| scripts/ (carga, documentación, utilidades) | 12 | 1.787 |
 | Despliegue (Docker y arranque) | 5 | 200 |
-| **Total** | **55** | **5.339** |
+| **Total** | **57** | **6.062** |
 
 **Huellas de integridad (SHA-256, primeros 16 caracteres)** de los archivos fuente analizados:
 
@@ -46,21 +46,23 @@
 | `iniciar.bat` | 1.583 | `9c78c6237b267ec3` |
 | `mocks/__init__.py` | 0 | `e3b0c44298fc1c14` |
 | `mocks/integrax_mock.py` | 4.412 | `4c32c5630c51a284` |
-| `scripts/_comun.py` | 2.911 | `09cdfd57508a7a2a` |
+| `scripts/_comun.py` | 2.914 | `dee416a6866f5233` |
+| `scripts/armar_entrega.py` | 4.313 | `4ebc6bf31f0fd837` |
 | `scripts/capturas.py` | 5.994 | `ad58b6ef7081541f` |
 | `scripts/carga_basica.py` | 3.157 | `658fce5ad239d5dc` |
 | `scripts/generar_diccionario.py` | 9.989 | `38d2ba4c94aba63b` |
 | `scripts/generar_env_docker.ps1` | 1.096 | `dbc60138f4fe4c16` |
-| `scripts/generar_fragmentos.py` | 11.442 | `d48995a285869c78` |
+| `scripts/generar_fragmentos.py` | 11.568 | `0814e665426eddb0` |
 | `scripts/generar_mer.py` | 8.488 | `a7d35e06efdb3fa1` |
 | `scripts/generar_pdf.py` | 6.929 | `a6aa634e29b5ef5a` |
-| `scripts/generar_word.py` | 17.152 | `71486941b1817cc6` |
+| `scripts/generar_word.py` | 17.376 | `82c34ebb621655d5` |
 | `scripts/licencias.py` | 4.805 | `8e26120c58bfccdd` |
 | `scripts/verificar_documentacion.py` | 10.486 | `dca70e3a5436ab2f` |
 | `sql/01_schema.sql` | 4.165 | `c4dbcdee25ac09ec` |
 | `sql/02_seed_estados.sql` | 625 | `1a9e77feef6277a9` |
 | `sql/03_rol_aplicacion.sql` | 3.032 | `1741b9878ae1e726` |
 | `sql/04_migracion_v1_1.sql` | 1.759 | `30b5b89e1bb8ba9c` |
+| `sql/salesx_demo.sql` | 55.398 | `8b0d2a69a44be6b7` |
 | `tests/conftest.py` | 2.622 | `0fbf7cab97451029` |
 | `tests/test_api.py` | 13.652 | `e51ea96ba46f8573` |
 | `tests/test_catalogo_rest.py` | 9.591 | `71e25efb284d82a1` |

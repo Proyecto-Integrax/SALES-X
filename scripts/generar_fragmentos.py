@@ -180,6 +180,7 @@ def pruebas() -> dict:
         "tests/test_timeutil.py": "Zona horaria de negocio (reportes por día)",
         "tests/test_endurecimiento.py": "Endurecimiento: bloqueo en BD, consumidores, cookie + CSRF, contraseñas",
         "tests/test_catalogo_rest.py": "Integración REST con Clientes y Productos (servicio HTTP simulado)",
+        "tests/test_concurrencia.py": "Concurrencia: cambios de estado simultáneos sobre un mismo pedido (solo PostgreSQL)",
     }
     md = ["| Bloque de pruebas | Archivo | Pruebas | Resultado |", "|---|---|---:|---|"]
     for arch in sorted(por_archivo, key=lambda a: list(desc).index(a) if a in desc else 99):

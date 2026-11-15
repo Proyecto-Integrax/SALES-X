@@ -68,7 +68,7 @@ def expandir(texto: str, base: Path | None = None) -> str:
         f = base / m.group(1).strip()
         return f.read_text(encoding="utf-8").rstrip() if f.exists() else f"> **Falta el fragmento `{m.group(1).strip()}`:** ejecute `python scripts/generar_fragmentos.py`."
 
-    return re.sub(r"^\{\{incluir:\s*([^}]+)\}\}\s*$", reemplazo, texto, flags=re.M)
+    return re.sub(r"^\{\{incluir:\s*([^}]+)\}\}[ \t]*$", reemplazo, texto, flags=re.M)
 
 
 def filas_meta(meta: dict) -> list[tuple[str, str]]:
