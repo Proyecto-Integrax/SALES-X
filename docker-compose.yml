@@ -1,0 +1,48 @@
+# SALES-X + PostgreSQL.  Uso:  docker compose up -d --build
+# Defina los secretos en un archivo .env junto a este (ver .env.example); NO los deje por defecto.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: salesx
+      POSTGRES_USER: salesx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Defina APP_DB_PASSWORD en .env}   # contraseña del rol salesx_app (solo letras y números)
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/02_seed_estados.sql:/docker-entrypoint-initdb.d/02_seed_estados.sql:ro
+      # 03: crea el rol de mínimo privilegio (la API no se conecta como dueño de la base)
+      - ./sql/03_rol_aplicacion.sql:/sql/03_rol_aplicacion.sql:ro
+      - ./docker/03_aplicar_rol_app.sh:/docker-entrypoint-initdb.d/03_aplicar_rol_app.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salesx -d salesx"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No se publica el puerto 5432: solo la aplicación accede a la base de datos.
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      # La API usa el rol limitado `salesx_app` (no el dueño): no puede alterar el esquema ni editar la auditoría.
+      DATABASE_URL: postgresql+psycopg2://salesx_app:${APP_DB_PASSWORD}@db:5432/salesx
+      SECRET_KEY: ${SECRET_KEY:?Defina SECRET_KEY en .env}
+      INTEGRATION_API_KEY: ${INTEGRATION_API_KEY:?Defina INTEGRATION_API_KEY en .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@salesx.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD en .env}
+      SEED_DEMO_USERS: "false"
+      CATALOGO_PROVIDER: ${CATALOGO_PROVIDER:-simulado}
+      CLIENTES_API_URL: ${CLIENTES_API_URL:-}
+      PRODUCTOS_API_URL: ${PRODUCTOS_API_URL:-}
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:

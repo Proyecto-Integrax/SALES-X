@@ -1,0 +1,28 @@
+# Complemento SOLO PARA PRUEBAS: agrega servicios SIMULADOS de Clientes y Productos de INTEGRAX
+# y hace que SALES-X los consuma por REST (CATALOGO_PROVIDER=rest), como lo hará con los reales.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.mock.yml --env-file .env.docker up -d --build
+#
+# El simulado no tiene autenticación y publica el puerto 8001 para poder provocar fallos
+# (/_admin/modo, /_admin/productos/{id}). NO usar en producción.
+services:
+  integrax-mock:
+    build: .
+    command: ["uvicorn", "mocks.integrax_mock:app", "--host", "0.0.0.0", "--port", "8001"]
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8001/api/clientes').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    depends_on:
+      integrax-mock:
+        condition: service_healthy
+    environment:
+      CATALOGO_PROVIDER: rest
+      CLIENTES_API_URL: http://integrax-mock:8001/api/clientes
+      PRODUCTOS_API_URL: http://integrax-mock:8001/api/productos
