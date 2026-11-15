@@ -1,0 +1,9 @@
+.env
+*.db
+__pycache__/
+.pytest_cache/
+.venv/
+.env.docker
+*.dump
+*.log
+docs/fuentes/_tmp_*
