@@ -56,6 +56,7 @@ def main() -> None:
         shutil.rmtree(DESTINO)
     (DESTINO / "Word").mkdir(parents=True)
     (DESTINO / "Extras").mkdir()
+    (DESTINO / "Diagramas").mkdir()
 
     for n in PDFS:
         shutil.copy2(C.DOCS / f"{n}.pdf", DESTINO / f"{n}.pdf")
@@ -67,6 +68,9 @@ def main() -> None:
         shutil.copy2(C.DOCS / f"{n}.pdf", DESTINO / "Extras" / f"{n}.pdf")
         (DESTINO / "Extras" / f"{n}.md").write_text(markdown_expandido(n), encoding="utf-8")
         shutil.copy2(C.DOCS / "word" / f"{n}.docx", DESTINO / "Extras" / f"{n}.docx")
+
+    for d in ("casos-de-uso.png", "diagrama-de-clases.png", "modelo-de-datos.png", "mer-salesx.png"):
+        shutil.copy2(C.DOCS / "diagramas" / d, DESTINO / "Diagramas" / d)
 
     v = C.version()
     (DESTINO / "LEEME.txt").write_text(
@@ -82,6 +86,7 @@ Documentos principales (13, con los mismos nombres del proyecto de referencia)
   05 Revisión de lanzamiento (GO/NO-GO) · capacidad   (Markdown)
 
 Word\\    Versión editable (.docx) de cada documento.
+Diagramas\\  UML (casos de uso y clases), modelo de datos y MER.
 Extras\\  Manual de usuario y Guía de operación y despliegue (PDF, Markdown y Word).
 Código    SALES-X_entrega.zip (en la carpeta superior): aplicación, pruebas, Docker y specs.
 

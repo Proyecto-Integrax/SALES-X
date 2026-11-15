@@ -9,7 +9,7 @@ Documento de apoyo del informe `01-Informe-Auditoria-Seguridad-SALES-X.md`. Expl
 | Sistema | SALES-X 1.0.0 (línea base, 13/11/2026) y 1.2.0 (reverificación, 14/11/2026) |
 | Equipo de pruebas | Windows 11 Pro · Python 3.13 · PostgreSQL 18.6 local · Docker Desktop 4.99 (motor 29.9.3, Compose v5.7) |
 | Bases de datos usadas | SQLite temporal, PostgreSQL local (`salesx_test` para pruebas, `salesx` para la aplicación) y PostgreSQL 16 en contenedor |
-| Control de versiones | **El proyecto aún no está bajo Git**; no hay *commit* que citar. Para compensarlo, la sección 2 incluye la **huella SHA-256** de cada archivo revisado: quien tenga los mismos archivos obtendrá las mismas huellas. |
+| Control de versiones | El proyecto tiene un **repositorio Git local** (rama `main`) creado después de la revisión de la versión 1.2.0, con 7 *commits* temáticos: aplicación, SQL, pruebas, Docker, especificaciones, generadores y documentación. **No está publicado en un servidor remoto** y su historia no refleja el desarrollo día a día, sino la organización final del código. Por eso la sección 2 sigue incluyendo la **huella SHA-256** de cada archivo revisado: quien tenga los mismos archivos obtendrá las mismas huellas. |
 | Datos | Solo datos de demostración y de prueba; ninguna base de producción |
 | Secretos | Los de las pruebas son aleatorios o de demostración; los de Docker se generan aleatorios y no se publican |
 
