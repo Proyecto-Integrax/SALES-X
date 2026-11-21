@@ -1,6 +1,9 @@
 'use strict';
 /* SALES-X - interfaz web (JS puro; sin estilos/scripts en línea por la CSP). */
-const API = '/api/v1';
+// Servida por la propia API (mismo origen) o por Live Server/otro servidor estático (API en el puerto 8000).
+const BASE = location.port === '8000' ? '' : `http://${location.hostname || 'localhost'}:8000`;
+const API = BASE + '/api/v1';
+{ const d = document.getElementById('lnk-docs'); if (d) d.href = BASE + '/docs'; }
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -40,7 +43,7 @@ async function api(path, { method = 'GET', body, raw = false } = {}) {
   const headers = {};
   if (body) headers['Content-Type'] = 'application/json';
   if (method !== 'GET') headers['X-CSRF-Token'] = decodeURIComponent(cookie('salesx_csrf'));
-  const r = await fetch(API + path, { method, headers, credentials: 'same-origin', body: body ? JSON.stringify(body) : undefined });
+  const r = await fetch(API + path, { method, headers, credentials: 'include', body: body ? JSON.stringify(body) : undefined });
   if (r.status === 401 && !path.startsWith('/auth/login') && !path.startsWith('/auth/me')) { showLogin(); throw new Error('Sesión expirada, ingrese de nuevo'); }
   if (raw && r.ok) return r;
   const data = await r.json().catch(() => null);
@@ -63,8 +66,8 @@ function ask(title, bodyHtml, okText = 'Aceptar') {
     const f = $('#dlg-body input,#dlg-body textarea'); if (f) f.focus();
   });
 }
-const cName = id => S.cMap.get(id)?.nombre ?? id.slice(0, 8) + '…';
-const pName = id => S.pMap.get(id)?.nombre ?? id.slice(0, 8) + '…';
+const cName = id => S.cMap.get(id)?.nombre ?? id;
+const pName = id => S.pMap.get(id)?.nombre ?? id;
 const animateBars = () => $$('.bar-fill', view).forEach(el => { el.style.width = el.dataset.w + '%'; });
 const barsHtml = (rows, fmtV = v => v) => {
   const max = Math.max(1, ...rows.map(r => r.v));
@@ -74,7 +77,7 @@ const barsHtml = (rows, fmtV = v => v) => {
 /* ---------- sesión ---------- */
 async function boot() {
   try { sessionStorage.removeItem('sx_token'); } catch { /* resto de la v1.0: el token ya no se guarda en el navegador */ }
-  try { const h = await (await fetch('/health')).json(); if (h.iva_rate != null) S.iva = h.iva_rate; } catch { /* ignorar */ }
+  try { const h = await (await fetch(BASE + '/health')).json(); if (h.iva_rate != null) S.iva = h.iva_rate; } catch { /* ignorar */ }
   try {
     S.user = await api('/auth/me');
     await entrar();
@@ -133,7 +136,7 @@ $('#logout').addEventListener('click', salir);
 $('#chpw').addEventListener('click', () => cambiarContrasena(false));
 
 /* ---------- router ---------- */
-const routes = { dashboard: viewDashboard, pedidos: viewPedidos, nuevo: () => viewForm(), editar: id => viewForm(id), pedido: viewDetalle, reportes: viewReportes, usuarios: viewUsuarios, integraciones: viewIntegraciones };
+const routes = { dashboard: viewDashboard, pedidos: viewPedidos, nuevo: () => viewForm(), editar: id => viewForm(id), pedido: viewDetalle, reportes: viewReportes, usuarios: viewUsuarios };
 async function route() {
   if (!S.user) return;
   const [r, arg] = location.hash.replace(/^#\//, '').split('/');
@@ -175,8 +178,8 @@ async function viewDashboard() {
 }
 function tablaPedidos(items) {
   if (!items.length) return '<div class="empty">No hay pedidos para mostrar.</div>';
-  return `<div class="scroll"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th class="right">Total</th></tr></thead><tbody>
-    ${items.map(p => `<tr class="click" data-id="${p.pedido_id}"><td class="mono">${p.pedido_id.slice(0, 8)}</td><td>${esc(cName(p.cliente_id))}</td>
+  return `<div class="scroll"><table><thead><tr><th>ID pedido</th><th>Cliente</th><th>ID cliente</th><th>Fecha</th><th>Estado</th><th class="right">Total</th></tr></thead><tbody>
+    ${items.map(p => `<tr class="click" data-id="${p.pedido_id}"><td class="mono">${p.pedido_id}</td><td>${esc(cName(p.cliente_id))}</td><td class="mono">${p.cliente_id}</td>
     <td>${fdate(p.fecha_creacion)}</td><td>${badge(p.estado)}</td><td class="right">${money(p.total)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 const bindRows = () => $$('tr.click', view).forEach(tr => tr.addEventListener('click', () => { location.hash = '#/pedido/' + tr.dataset.id; }));
@@ -215,8 +218,8 @@ async function viewDetalle(id) {
   const sig = TRANS[p.estado].filter(e => e !== 'Cancelado');
   const puedeEditar = ['Pendiente', 'Confirmado'].includes(p.estado);
   view.innerHTML = `
-    <div class="head"><div><a href="#/pedidos" class="small">← Pedidos</a><h1>Pedido <span class="mono">${p.pedido_id.slice(0, 8)}</span> ${badge(p.estado)}</h1>
-      <p class="muted">${esc(cName(p.cliente_id))} · ${fdate(p.fecha_creacion)}</p></div>
+    <div class="head"><div><a href="#/pedidos" class="small">← Pedidos</a><h1>Pedido <span class="mono">${p.pedido_id}</span> ${badge(p.estado)}</h1>
+      <p class="muted">${esc(cName(p.cliente_id))} · ID cliente <span class="mono">${p.cliente_id}</span> · ${fdate(p.fecha_creacion)}</p></div>
       <div class="actions">
         ${sig.map(e => `<button class="btn primary" data-state="${esc(e)}">Pasar a «${esc(e)}»</button>`).join('')}
         ${puedeEditar ? `<a class="btn" href="#/editar/${p.pedido_id}">Modificar</a>` : ''}
@@ -357,38 +360,6 @@ async function viewUsuarios() {
   }));
   $$('[data-tog]', view).forEach(b => b.addEventListener('click', async () => {
     try { await api('/vendedores/' + b.dataset.tog, { method: 'PATCH', body: { activo: b.dataset.act !== 'true' } }); route(); } catch (x) { toast(x.message, true); }
-  }));
-}
-
-/* ---------- Integraciones: consumidores y claves (admin) ---------- */
-async function viewIntegraciones() {
-  if (S.user.rol !== 'admin') throw new Error('Se requiere rol administrador');
-  const cs = await api('/consumidores');
-  const fx = iso => iso ? fdate(iso) : '—';
-  view.innerHTML = `
-    <div class="head"><div><h1>Integraciones</h1><p class="muted">Una clave por sistema consumidor: se puede revocar y su uso queda registrado</p></div></div>
-    <div class="grid g3-2"><div class="card"><div class="scroll"><table><thead><tr><th>Consumidor</th><th>Estado</th><th>Expira</th><th>Último uso</th><th></th></tr></thead><tbody>
-      ${cs.map(c => `<tr><td>${esc(c.nombre)}</td><td>${c.activo ? '<span class="badge b-Entregado">Activa</span>' : '<span class="badge b-Cancelado">Revocada</span>'}</td>
-      <td>${fx(c.expira)}</td><td>${fx(c.ultimo_uso)}</td>
-      <td class="right"><button class="btn small" data-tog="${c.consumidor_id}" data-act="${c.activo}">${c.activo ? 'Revocar' : 'Reactivar'}</button></td></tr>`).join('')}</tbody></table></div>
-      <p class="muted small mt">Para rotar una clave: cree un consumidor nuevo, configure el sistema con la clave nueva y revoque la anterior.</p></div>
-      <div class="card"><h2>Nuevo consumidor</h2><form id="cf" class="grid">
-        <label>Nombre del sistema<input name="nombre" required minlength="3" maxlength="80" placeholder="p. ej. Clientes-INTEGRAX"></label>
-        <label>Expira (opcional)<input name="expira" type="date"></label>
-        <button class="btn primary">Generar clave</button></form></div></div>`;
-  $('#cf').addEventListener('submit', async e => {
-    e.preventDefault();
-    const f = Object.fromEntries(new FormData(e.target));
-    const body = { nombre: f.nombre, expira: f.expira ? new Date(f.expira + 'T23:59:59').toISOString() : null };
-    try {
-      const r = await api('/consumidores', { method: 'POST', body });
-      await ask('Clave generada', `<p><strong>Cópiela ahora:</strong> no se volverá a mostrar.</p><label>Clave de «${esc(r.nombre)}»<input readonly value="${esc(r.clave)}" class="mono"></label>
-        <p class="muted small">Se envía en la cabecera <span class="mono">X-API-Key</span>.</p>`, 'Ya la copié');
-      route();
-    } catch (x) { toast(x.message, true); }
-  });
-  $$('[data-tog]', view).forEach(b => b.addEventListener('click', async () => {
-    try { await api('/consumidores/' + b.dataset.tog, { method: 'PATCH', body: { activo: b.dataset.act !== 'true' } }); route(); } catch (x) { toast(x.message, true); }
   }));
 }
 

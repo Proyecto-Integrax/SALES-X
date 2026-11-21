@@ -7,3 +7,4 @@ __pycache__/
 *.dump
 *.log
 docs/fuentes/_tmp_*
+.env.db

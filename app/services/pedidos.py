@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, lazyload
 
 from ..config import get_settings
 from ..integration.catalogo import CatalogoClient
-from ..models import AuditoriaPedido, DetallePedido, EstadoPedido, Pedido, Vendedor
+from ..models import AuditoriaPedido, Cliente, DetallePedido, EstadoPedido, Pedido, Producto, Vendedor
 from ..schemas import ItemIn
 
 ESTADOS = [
@@ -73,7 +73,31 @@ def _consolidar(items: list[ItemIn]) -> "OrderedDict[uuid.UUID, int]":
     return out
 
 
-def _construir_detalles(catalogo: CatalogoClient, items: list[ItemIn]) -> list[DetallePedido]:
+def sincronizar_cliente(db: Session, c: dict) -> None:
+    """Crea/actualiza la copia local del cliente (necesaria para la FK de pedido.cliente_id)."""
+    db.merge(Cliente(cliente_id=c["cliente_id"], nombre=c["nombre"], documento=c.get("documento"), correo=c.get("correo")))
+    db.flush()
+
+
+def sincronizar_producto(db: Session, p: dict) -> None:
+    """Crea/actualiza la copia local del producto (necesaria para la FK de detalle_pedido.producto_id)."""
+    db.merge(Producto(producto_id=p["producto_id"], nombre=p["nombre"], sku=p.get("sku"), precio=p["precio"],
+                      disponible=p.get("disponible", 0), activo=p.get("activo", True)))
+    db.flush()
+
+
+def sincronizar_catalogo(db: Session, catalogo: CatalogoClient) -> tuple[int, int]:
+    """Copia todos los clientes y productos del catálogo a las tablas locales."""
+    cs, ps = catalogo.listar_clientes(), catalogo.listar_productos()
+    for c in cs:
+        sincronizar_cliente(db, c)
+    for p in ps:
+        sincronizar_producto(db, p)
+    db.commit()
+    return len(cs), len(ps)
+
+
+def _construir_detalles(db: Session, catalogo: CatalogoClient, items: list[ItemIn]) -> list[DetallePedido]:
     detalles: list[DetallePedido] = []
     for producto_id, cantidad in _consolidar(items).items():
         prod = catalogo.obtener_producto(producto_id)
@@ -87,6 +111,7 @@ def _construir_detalles(catalogo: CatalogoClient, items: list[ItemIn]) -> list[D
                 f"Disponibilidad insuficiente para '{prod['nombre']}': "
                 f"solicitado {cantidad}, disponible {prod['disponible']}",
             )
+        sincronizar_producto(db, prod)
         # El precio SIEMPRE se toma del catálogo, nunca del cliente HTTP.
         d = DetallePedido(producto_id=producto_id, cantidad=cantidad, precio_unitario=prod["precio"], subtotal=0)
         d.calcular_subtotal()
@@ -97,15 +122,17 @@ def _construir_detalles(catalogo: CatalogoClient, items: list[ItemIn]) -> list[D
 def crear_pedido(
     db: Session, catalogo: CatalogoClient, vendedor: Vendedor, cliente_id: uuid.UUID, descripcion: str | None, items: list[ItemIn]
 ) -> Pedido:
-    if not catalogo.obtener_cliente(cliente_id):
+    cliente = catalogo.obtener_cliente(cliente_id)
+    if not cliente:
         raise HTTPException(422, f"Cliente {cliente_id} no existe en el catálogo")
+    sincronizar_cliente(db, cliente)
     pedido = Pedido(
         cliente_id=cliente_id,
         vendedor_id=vendedor.vendedor_id,
         estado=obtener_estado(db, "Pendiente"),
         descripcion=descripcion,
     )
-    pedido.detalles = _construir_detalles(catalogo, items)
+    pedido.detalles = _construir_detalles(db, catalogo, items)
     pedido.calcular_total(get_settings().iva_rate)
     db.add(pedido)
     db.flush()
@@ -131,7 +158,7 @@ def modificar_pedido(
         cambios.append("descripción actualizada")
     if items is not None:
         total_anterior = pedido.total
-        pedido.detalles = _construir_detalles(catalogo, items)  # delete-orphan elimina los anteriores
+        pedido.detalles = _construir_detalles(db, catalogo, items)  # delete-orphan elimina los anteriores
         pedido.calcular_total(get_settings().iva_rate)
         cambios.append(f"productos reemplazados ({len(pedido.detalles)}); total {total_anterior} -> {pedido.total}")
     if not cambios:

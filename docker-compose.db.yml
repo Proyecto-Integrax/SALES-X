@@ -1,0 +1,22 @@
+# Solo PostgreSQL para desarrollo local (visible desde VS Code en 127.0.0.1:5432).
+# Uso: docker compose -f docker-compose.db.yml --env-file .env.db up -d
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: salesx-db
+    restart: always
+    environment:
+      POSTGRES_DB: salesx
+      POSTGRES_USER: salesx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env.db}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - salesx_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salesx -d salesx"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  salesx_pgdata:

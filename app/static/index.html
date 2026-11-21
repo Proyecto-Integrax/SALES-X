@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SALES-X · Gestión de Ventas y Pedidos</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232457d6'/%3E%3Cpath d='M9 21l5-6 4 4 6-8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="login" class="login hidden">
@@ -28,13 +28,12 @@
         <a href="#/nuevo" data-r="nuevo">Nuevo pedido</a>
         <a href="#/reportes" data-r="reportes">Reportes</a>
         <a href="#/usuarios" data-r="usuarios" class="admin-only hidden">Usuarios</a>
-        <a href="#/integraciones" data-r="integraciones" class="admin-only hidden">Integraciones</a>
       </nav>
       <div class="side-foot">
         <div id="who" class="small"></div>
         <button id="chpw" class="btn ghost small">Cambiar contraseña</button>
         <button id="logout" class="btn ghost small">Cerrar sesión</button>
-        <a class="small muted" href="/docs" target="_blank" rel="noopener">API (Swagger)</a>
+        <a class="small muted" id="lnk-docs" href="/docs" target="_blank" rel="noopener">API (Swagger)</a>
       </div>
     </aside>
     <main id="view" class="main" tabindex="-1"></main>
@@ -43,6 +42,6 @@
   <dialog id="dlg"><form method="dialog" id="dlg-form"><h3 id="dlg-title"></h3><div id="dlg-body"></div>
     <div class="dlg-actions"><button class="btn ghost" value="cancel" id="dlg-cancel">Cancelar</button><button class="btn primary" value="ok" id="dlg-ok">Aceptar</button></div></form></dialog>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script src="/static/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

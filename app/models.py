@@ -2,8 +2,8 @@
 
 Refleja el modelo entidad-relación y el diagrama de clases de la documentación:
 ESTADO_PEDIDO, PEDIDO, DETALLE_PEDIDO, AUDITORIA_PEDIDO y VENDEDOR.
-`cliente_id` y `producto_id` son identificadores comunes de INTEGRAX (no hay FK
-porque esas entidades viven en otros microproyectos con su propia base de datos).
+`cliente_id` y `producto_id` son identificadores comunes de INTEGRAX. CLIENTE y PRODUCTO son
+copias locales (se sincronizan desde el catálogo de INTEGRAX) para poder tener integridad referencial (FK).
 """
 
 import uuid
@@ -63,11 +63,37 @@ class EstadoPedido(Base):
     descripcion: Mapped[str | None] = mapped_column(String(200))
 
 
+class Cliente(Base):
+    """Copia local del cliente (el dueño del dato es el microproyecto de Clientes)."""
+
+    __tablename__ = "cliente"
+
+    cliente_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(160), nullable=False)
+    documento: Mapped[str | None] = mapped_column(String(40), index=True)
+    correo: Mapped[str | None] = mapped_column(String(160))
+    fecha_sincronizacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
+class Producto(Base):
+    """Copia local del producto (el dueño del dato es el microproyecto de Productos/Inventario)."""
+
+    __tablename__ = "producto"
+
+    producto_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(160), nullable=False)
+    sku: Mapped[str | None] = mapped_column(String(40), index=True)
+    precio: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    disponible: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    fecha_sincronizacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+
 class Pedido(Base):
     __tablename__ = "pedido"
 
     pedido_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    cliente_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False, index=True)
+    cliente_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("cliente.cliente_id"), nullable=False, index=True)
     estado_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("estado_pedido.estado_id"), nullable=False)
     vendedor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("vendedor.vendedor_id"), nullable=False)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
@@ -103,7 +129,7 @@ class DetallePedido(Base):
 
     detalle_pedido_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     pedido_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pedido.pedido_id", ondelete="CASCADE"), nullable=False, index=True)
-    producto_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
+    producto_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("producto.producto_id"), nullable=False, index=True)
     cantidad: Mapped[int] = mapped_column(Integer, nullable=False)
     precio_unitario: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)

@@ -24,9 +24,30 @@ CREATE TABLE IF NOT EXISTS vendedor (
     CONSTRAINT ck_vendedor_rol CHECK (rol IN ('admin', 'vendedor'))
 );
 
+-- Copias locales del catálogo de INTEGRAX (la API las sincroniza); permiten FK desde pedido y detalle_pedido.
+CREATE TABLE IF NOT EXISTS cliente (
+    cliente_id           UUID         PRIMARY KEY,
+    nombre               VARCHAR(160) NOT NULL,
+    documento            VARCHAR(40),
+    correo               VARCHAR(160),
+    fecha_sincronizacion TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_cliente_documento ON cliente (documento);
+
+CREATE TABLE IF NOT EXISTS producto (
+    producto_id          UUID           PRIMARY KEY,
+    nombre               VARCHAR(160)   NOT NULL,
+    sku                  VARCHAR(40),
+    precio               NUMERIC(14, 2) NOT NULL,
+    disponible           INTEGER        NOT NULL DEFAULT 0,
+    activo               BOOLEAN        NOT NULL DEFAULT TRUE,
+    fecha_sincronizacion TIMESTAMPTZ    NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_producto_sku ON producto (sku);
+
 CREATE TABLE IF NOT EXISTS pedido (
     pedido_id      UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
-    cliente_id     UUID           NOT NULL,              -- identificador común INTEGRAX (sin FK: otro microproyecto)
+    cliente_id     UUID           NOT NULL REFERENCES cliente (cliente_id),
     estado_id      UUID           NOT NULL REFERENCES estado_pedido (estado_id),
     vendedor_id    UUID           NOT NULL REFERENCES vendedor (vendedor_id),
     subtotal       NUMERIC(14, 2) NOT NULL DEFAULT 0,
@@ -43,7 +64,7 @@ CREATE INDEX IF NOT EXISTS ix_pedido_estado  ON pedido (estado_id);
 CREATE TABLE IF NOT EXISTS detalle_pedido (
     detalle_pedido_id UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
     pedido_id         UUID           NOT NULL REFERENCES pedido (pedido_id) ON DELETE CASCADE,
-    producto_id       UUID           NOT NULL,           -- identificador común INTEGRAX (sin FK)
+    producto_id       UUID           NOT NULL REFERENCES producto (producto_id),
     cantidad          INTEGER        NOT NULL,
     precio_unitario   NUMERIC(14, 2) NOT NULL,
     subtotal          NUMERIC(14, 2) NOT NULL,
@@ -51,6 +72,7 @@ CREATE TABLE IF NOT EXISTS detalle_pedido (
     CONSTRAINT ck_detalle_precio   CHECK (precio_unitario >= 0)
 );
 CREATE INDEX IF NOT EXISTS ix_detalle_pedido ON detalle_pedido (pedido_id);
+CREATE INDEX IF NOT EXISTS ix_detalle_producto ON detalle_pedido (producto_id);
 
 CREATE TABLE IF NOT EXISTS auditoria_pedido (
     auditoria_id UUID        PRIMARY KEY DEFAULT gen_random_uuid(),

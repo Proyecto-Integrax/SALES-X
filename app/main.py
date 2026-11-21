@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
@@ -12,7 +12,9 @@ from . import __version__, models  # noqa: F401  (registra los modelos)
 from .config import get_settings, validate_for_production
 from .database import Base, SessionLocal, engine
 from .routers import auth, catalogo, consumidores, integracion, pedidos, reportes
+from .integration.catalogo import get_catalogo
 from .seed import seed
+from .services.pedidos import sincronizar_catalogo
 
 STATIC_DIR = Path(__file__).parent / "static"
 settings = get_settings()
@@ -30,6 +32,11 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(engine)
     with SessionLocal() as db:
         seed(db)
+        try:  # copia local de clientes y productos (FK); si el catálogo externo no responde, se sincroniza al crear pedidos
+            sincronizar_catalogo(db, get_catalogo())
+        except Exception:
+            log.warning("No se pudo sincronizar el catálogo al iniciar", exc_info=True)
+            db.rollback()
     yield
 
 
@@ -44,8 +51,9 @@ if settings.cors_origin_list:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
+        allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH"],
-        allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+        allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-CSRF-Token"],
     )
 
 
@@ -94,4 +102,4 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/", include_in_schema=False)
 def index():
-    return FileResponse(STATIC_DIR / "index.html")
+    return RedirectResponse("/static/index.html")
