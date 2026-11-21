@@ -1,78 +1,48 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SALES-X · Entrega</title>
-<style>
-:root{color-scheme:light;--bg:#f4f6fa;--panel:#fff;--ink:#1b2333;--muted:#6a7488;--line:#e3e8f0;--brand:#2457d6}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,Segoe UI,sans-serif}
-main{max-width:980px;margin:0 auto;padding:32px 16px 64px}h1{margin:0 0 4px}h2{margin:36px 0 12px;font-size:20px}
-p.sub{color:var(--muted);margin:0 0 20px}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
-ul.docs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-ul.docs a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--brand);text-decoration:none;font-weight:600}
-ul.docs a:hover{border-color:var(--brand)}.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.shots img{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}.shots figcaption{font-size:13px;color:var(--muted)}figure{margin:0}
-code{background:#eef1f7;padding:2px 6px;border-radius:5px;font-size:14px}pre{background:#eef1f7;padding:14px;border-radius:10px;overflow:auto}
-table{border-collapse:collapse}td,th{padding:6px 12px;border-bottom:1px solid var(--line);text-align:left}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SALES-X · Gestión de Ventas y Pedidos</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232457d6'/%3E%3Cpath d='M9 21l5-6 4 4 6-8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main>
-<h1>SALES-X · Gestión de Ventas y Pedidos</h1>
-<p class="sub">Microproyecto de INTEGRAX · Integración de Aplicaciones · Unisabaneta. Aplicación web + API REST (FastAPI, PostgreSQL).</p>
+  <div id="login" class="login hidden">
+    <form id="login-form" class="login-card" autocomplete="on">
+      <div class="brand brand-lg"><span class="logo">SX</span><div><strong>SALES-X</strong><small>Gestión de Ventas y Pedidos</small></div></div>
+      <label>Correo<input id="l-correo" type="email" required autocomplete="username" autofocus></label>
+      <label>Contraseña<input id="l-pass" type="password" required autocomplete="current-password"></label>
+      <p id="l-error" class="error hidden" role="alert"></p>
+      <button class="btn primary" type="submit">Ingresar</button>
+      <p class="muted small">Microproyecto de INTEGRAX · v1.0</p>
+    </form>
+  </div>
 
-<div class="card">
-<strong>Código:</strong> <a href="https://github.com/Proyecto-Integrax/SALES-X">github.com/Proyecto-Integrax/SALES-X</a><br>
-Esta página reúne la documentación y las capturas. La aplicación necesita su servidor (Python + base de datos), por eso no corre aquí: vea «Cómo ejecutarla».
-</div>
+  <div id="shell" class="shell hidden">
+    <aside class="side">
+      <div class="brand"><span class="logo">SX</span><div><strong>SALES-X</strong><small>Ventas y pedidos</small></div></div>
+      <nav id="nav">
+        <a href="#/dashboard" data-r="dashboard">Panel</a>
+        <a href="#/pedidos" data-r="pedidos">Pedidos</a>
+        <a href="#/nuevo" data-r="nuevo">Nuevo pedido</a>
+        <a href="#/reportes" data-r="reportes">Reportes</a>
+        <a href="#/usuarios" data-r="usuarios" class="admin-only hidden">Usuarios</a>
+      </nav>
+      <div class="side-foot">
+        <div id="who" class="small"></div>
+        <button id="chpw" class="btn ghost small">Cambiar contraseña</button>
+        <button id="logout" class="btn ghost small">Cerrar sesión</button>
+        <a class="small muted" id="lnk-docs" href="documentos.html">Documentación</a>
+      </div>
+    </aside>
+    <main id="view" class="main" tabindex="-1"></main>
+  </div>
 
-<h2>Documentos de la entrega</h2>
-<ul class="docs">
-<li><a href="E1_Modelo_Entidad_Relacion.pdf">E1 · Modelo entidad-relación</a></li>
-<li><a href="E2_Diccionario_de_Datos.pdf">E2 · Diccionario de datos</a></li>
-<li><a href="E3_ERS_IEEE830.pdf">E3 · ERS (IEEE 830)</a></li>
-<li><a href="E4_Matriz_Propiedad_Intelectual.pdf">E4 · Matriz de propiedad intelectual</a></li>
-<li><a href="E5_Contrato_Licencia_Software.pdf">E5 · Contrato de licencia</a></li>
-<li><a href="E6_Matriz_Trazabilidad.pdf">E6 · Matriz de trazabilidad</a></li>
-<li><a href="E7_Pruebas_Integracion.pdf">E7 · Pruebas de integración</a></li>
-<li><a href="Manual-de-Usuario.pdf">Manual de usuario</a></li>
-<li><a href="Guia-de-Operacion-y-Despliegue.pdf">Guía de operación y despliegue</a></li>
-<li><a href="01-Informe-Auditoria-Seguridad-SALES-X.pdf">Auditoría de seguridad</a></li>
-<li><a href="03-Metodologia-y-Evidencias.pdf">Metodología y evidencias</a></li>
-<li><a href="04-Estado-de-Remediacion.pdf">Estado de remediación</a></li>
-<li><a href="05-Revision-Lanzamiento-GO-NO-GO.pdf">Revisión de lanzamiento (GO/NO-GO)</a></li>
-<li><a href="capacidad.pdf">Capacidad</a></li>
-<li><a href="Acta-Usuarios-Primer-Ingreso.pdf">Acta de usuarios (primer ingreso)</a></li>
-</ul>
-
-<h2>Diagramas</h2>
-<div class="shots">
-<figure><img src="diagramas/mer-salesx.png" alt="MER"><figcaption>Modelo entidad-relación</figcaption></figure>
-<figure><img src="diagramas/casos-de-uso.png" alt="Casos de uso"><figcaption>Casos de uso</figcaption></figure>
-<figure><img src="diagramas/diagrama-de-clases.png" alt="Clases"><figcaption>Diagrama de clases</figcaption></figure>
-<figure><img src="diagramas/modelo-de-datos.png" alt="Modelo de datos"><figcaption>Modelo de datos</figcaption></figure>
-</div>
-
-<h2>Capturas de la aplicación</h2>
-<div class="shots">
-<figure><img src="capturas/01-inicio-de-sesion.png" alt="Inicio de sesión"><figcaption>Inicio de sesión</figcaption></figure>
-<figure><img src="capturas/02-panel.png" alt="Panel"><figcaption>Panel</figcaption></figure>
-<figure><img src="capturas/03-pedidos.png" alt="Pedidos"><figcaption>Pedidos</figcaption></figure>
-<figure><img src="capturas/04-nuevo-pedido.png" alt="Nuevo pedido"><figcaption>Nuevo pedido</figcaption></figure>
-<figure><img src="capturas/05-detalle-y-auditoria.png" alt="Detalle y auditoría"><figcaption>Detalle y auditoría</figcaption></figure>
-</div>
-
-<h2>Cómo ejecutarla</h2>
-<div class="card">
-<pre>git clone https://github.com/Proyecto-Integrax/SALES-X.git
-cd SALES-X
-bash iniciar.sh        # Linux/macOS  ·  iniciar.bat en Windows</pre>
-Abre <code>http://localhost:8000</code> con base SQLite y 40 pedidos de demostración. API interactiva en <code>/docs</code>.
-<table><tr><th>Usuario</th><th>Correo</th><th>Contraseña (solo demo)</th></tr>
-<tr><td>Administrador</td><td>admin@salesx.local</td><td>Admin2026*</td></tr>
-<tr><td>Vendedor</td><td>vendedor@salesx.local</td><td>Ventas2026*</td></tr></table>
-</div>
-</main>
+  <dialog id="dlg"><form method="dialog" id="dlg-form"><h3 id="dlg-title"></h3><div id="dlg-body"></div>
+    <div class="dlg-actions"><button class="btn ghost" value="cancel" id="dlg-cancel">Cancelar</button><button class="btn primary" value="ok" id="dlg-ok">Aceptar</button></div></form></dialog>
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="demo-api.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

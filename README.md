@@ -10,6 +10,10 @@ Microproyecto de **INTEGRAX** (Integración de Aplicaciones · Unisabaneta). Apl
 | **Integración** | REST/JSON · JWT para usuarios · `X-API-Key` para sistemas · consumo REST de Clientes y Productos |
 | **Despliegue** | Docker + docker-compose (`docker compose --env-file .env.docker up -d --build`; ver la guía §3) |
 
+## Demostración en línea (GitHub Pages)
+
+La carpeta `docs/` publica la interfaz real con una **API simulada en el navegador** (`app/static/demo-api.js`): se puede iniciar sesión, crear y modificar pedidos, cambiar estados, ver la auditoría y el reporte, sin servidor ni base de datos (los datos viven en el navegador; hay botón «Restablecer datos»). La documentación está en `docs/documentos.html`. Para regenerarla tras cambiar la interfaz: `python scripts/publicar_pages.py`.
+
 ## Cómo ejecutarlo (elija una opción)
 
 | Opción | Qué necesita | Cómo | Qué obtiene |

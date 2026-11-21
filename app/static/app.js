@@ -1,9 +1,9 @@
 'use strict';
 /* SALES-X - interfaz web (JS puro; sin estilos/scripts en línea por la CSP). */
 // Servida por la propia API (mismo origen) o por Live Server/otro servidor estático (API en el puerto 8000).
-const BASE = location.port === '8000' ? '' : `http://${location.hostname || 'localhost'}:8000`;
+const BASE = (window.SALESX_DEMO || location.port === '8000') ? '' : `http://${location.hostname || 'localhost'}:8000`;
 const API = BASE + '/api/v1';
-{ const d = document.getElementById('lnk-docs'); if (d) d.href = BASE + '/docs'; }
+{ const d = document.getElementById('lnk-docs'); if (d && !window.SALESX_DEMO) d.href = BASE + '/docs'; }
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
